@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Upload, FileText, Zap, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Upload, Zap, Sparkles } from "lucide-react";
 import { EngineMode } from "../../src/types";
 
 interface DropzoneProps {
@@ -72,7 +72,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             <Zap size={16} /> Option 1: Offline Engine
           </div>
           <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}>
-            100% Local libraries (Docling, Tesseract.js). <b>Zero LLM / zero API calls.</b>
+            100% Local JS Parsers (PDF.js, Mammoth, Tesseract.js). <b>Zero LLM / zero API calls.</b>
           </div>
         </button>
 
@@ -95,7 +95,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             <Sparkles size={16} /> Option 2: Full AI Engine
           </div>
           <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}>
-            Docling + OpenAI Vision OCR + LLM Discrepancy Audit.
+            5-Stage Set-of-Marks DAG Layout + OpenAI Vision OCR.
           </div>
         </button>
       </div>

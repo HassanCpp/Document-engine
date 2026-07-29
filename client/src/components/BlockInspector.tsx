@@ -4,7 +4,6 @@ import {
   Search,
   Download,
   FileText,
-  Code,
   ShieldCheck,
   AlertCircle,
   BarChart2,
@@ -107,7 +106,7 @@ export const BlockInspector: React.FC<BlockInspectorProps> = ({
       {/* Pane Header */}
       <div className="pane-header" style={{ flexWrap: "wrap", gap: "10px" }}>
         <div className="pane-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span>Docling + OCR Extraction</span>
+          <span>Document Layout & OCR Extraction</span>
           <span style={{ fontSize: "11px", color: "#06b6d4", background: "rgba(6,182,212,0.15)", padding: "2px 8px", borderRadius: "10px", fontWeight: "600" }}>
             Page {currentPageIndex + 1} of {totalPages}
           </span>
@@ -404,43 +403,6 @@ export const BlockInspector: React.FC<BlockInspectorProps> = ({
             </div>
           </div>
 
-          {document.validationReport.aiValidationRan && (
-            <div style={{ background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.3)", padding: "16px", borderRadius: "10px", marginBottom: "20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#c084fc", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Sparkles size={16} /> AI Validation Discrepancy Audit
-                </h4>
-                <span style={{ fontSize: "14px", fontWeight: "800", color: "#a855f7", background: "rgba(0,0,0,0.4)", padding: "4px 12px", borderRadius: "12px" }}>
-                  Score: {document.validationReport.aiConfidenceScore}%
-                </span>
-              </div>
-
-              {document.validationReport.aiWarnings && document.validationReport.aiWarnings.length > 0 ? (
-                <div>
-                  <h5 style={{ fontSize: "12px", fontWeight: "600", color: "#f87171", marginBottom: "6px" }}>Discrepancies & Warnings:</h5>
-                  <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#fca5a5" }}>
-                    {document.validationReport.aiWarnings.map((w, idx) => (
-                      <li key={idx} style={{ marginBottom: "4px" }}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div style={{ fontSize: "12px", color: "#34d399" }}>No AI discrepancies detected.</div>
-              )}
-
-              {document.validationReport.aiSuggestedCorrections && document.validationReport.aiSuggestedCorrections.length > 0 && (
-                <div style={{ marginTop: "12px" }}>
-                  <h5 style={{ fontSize: "12px", fontWeight: "600", color: "#fbbf24", marginBottom: "6px" }}>Suggested Corrections:</h5>
-                  <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#fde68a" }}>
-                    {document.validationReport.aiSuggestedCorrections.map((c, idx) => (
-                      <li key={idx} style={{ marginBottom: "4px" }}>{c}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
           <h4 style={{ fontSize: "13px", fontWeight: "700", marginBottom: "8px", color: "#9ca3af" }}>Rule Issues Log:</h4>
           {document.validationReport.ruleIssues.length > 0 ? (
             <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#fda4af" }}>
@@ -468,7 +430,7 @@ export const BlockInspector: React.FC<BlockInspectorProps> = ({
             </div>
 
             <div style={{ background: "rgba(0,0,0,0.3)", padding: "14px", borderRadius: "8px", border: "1px solid var(--border-subtle)" }}>
-              <div style={{ fontSize: "11px", color: "#9ca3af" }}>Docling Time</div>
+              <div style={{ fontSize: "11px", color: "#9ca3af" }}>Layout Parser Time</div>
               <div style={{ fontSize: "16px", fontWeight: "700", color: "#38bdf8", marginTop: "4px" }}>{document.processingStats.doclingTimeMs} ms</div>
             </div>
 
