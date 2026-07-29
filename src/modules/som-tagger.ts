@@ -19,13 +19,39 @@ export interface SoMTaggedPage {
 }
 
 export async function createSetOfMarksTaggedPage(
-  pdfBuffer: Buffer,
+  inputBuffer: Buffer,
   pageNumber: number,
   dpi: number = 300
 ): Promise<SoMTaggedPage> {
-  // Stage 1: High-Precision 300 DPI Rasterization
-  const baseImageBuffer = await renderPdfPageToImageBuffer(pdfBuffer, pageNumber, dpi);
-  const baseImage = await loadImage(baseImageBuffer);
+  const isImage =
+    inputBuffer.slice(0, 8).toString("hex").startsWith("89504e47") || // PNG
+    inputBuffer.slice(0, 4).toString("hex").startsWith("ffd8ffe0") || // JPEG
+    inputBuffer.slice(0, 4).toString("hex").startsWith("ffd8ffe1") ||
+    inputBuffer.slice(0, 4).toString("hex").startsWith("ffd8ffe2") ||
+    inputBuffer.slice(0, 4).toString("utf8") === "RIFF"; // WEBP
+
+  let baseImage: any;
+  let nativeBlocks: ContentBlock[] = [];
+
+  if (isImage) {
+    // Standalone Image: load directly via canvas loadImage without PDF.js
+    baseImage = await loadImage(inputBuffer);
+  } else {
+    // PDF Document: rasterize page to 300 DPI image via PDF.js
+    try {
+      const baseImageBuffer = await renderPdfPageToImageBuffer(inputBuffer, pageNumber, dpi);
+      baseImage = await loadImage(baseImageBuffer);
+    } catch (err) {
+      console.warn(`[SoM Tagger] Falling back to direct image load for page ${pageNumber}:`, err);
+      baseImage = await loadImage(inputBuffer);
+    }
+
+    try {
+      nativeBlocks = await extractNativePdfPage(inputBuffer, pageNumber);
+    } catch (err) {
+      console.warn(`[SoM Tagger] Draft primitives fallback for page ${pageNumber}:`, err);
+    }
+  }
 
   const width = baseImage.width;
   const height = baseImage.height;
@@ -33,34 +59,17 @@ export async function createSetOfMarksTaggedPage(
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
 
-  // Draw base document image
+  // Draw base document / photo image
   ctx.drawImage(baseImage, 0, 0, width, height);
-
-  // Extract draft primitives for bounding boxes
-  let nativeBlocks: ContentBlock[] = [];
-  try {
-    nativeBlocks = await extractNativePdfPage(pdfBuffer, pageNumber);
-  } catch (err) {
-    console.warn(`[SoM Tagger] Draft primitives fallback for page ${pageNumber}:`, err);
-  }
 
   if (nativeBlocks.length === 0) {
     // Generate fine-grained grid visual regions if no native primitives
     nativeBlocks = [
       {
         id: `som_grid_1`,
-        type: "heading",
-        content: `Page ${pageNumber} Heading`,
-        boundingBox: [80, 80, 200, 920],
-        sourceMethod: "native",
-        confidence: 0.9,
-        pageNumber,
-      },
-      {
-        id: `som_grid_2`,
         type: "paragraph",
-        content: `Page ${pageNumber} Body Content`,
-        boundingBox: [220, 80, 880, 920],
+        content: `Document Page ${pageNumber} Visual Content`,
+        boundingBox: [50, 50, 950, 950],
         sourceMethod: "native",
         confidence: 0.9,
         pageNumber,
