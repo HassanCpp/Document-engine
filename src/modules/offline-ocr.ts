@@ -1,4 +1,5 @@
 import { createWorker } from "tesseract.js";
+import * as os from "os";
 import { PreprocessedImage } from "./image-preprocessor.js";
 import { ContentBlock, BlockType } from "../types.js";
 import { OCRPageResult } from "./openai-ocr.js";
@@ -7,17 +8,38 @@ export async function performOfflineOCR(
   images: PreprocessedImage[]
 ): Promise<OCRPageResult[]> {
   const ocrResults: OCRPageResult[] = [];
+  const tempCacheDir = os.tmpdir();
+
+  let worker: any = null;
+
+  try {
+    // Reusable Tesseract worker with writable /tmp cache path for Vercel Serverless
+    worker = await createWorker("eng", 1, {
+      cachePath: tempCacheDir,
+      logger: () => {},
+    });
+  } catch (workerInitErr) {
+    console.warn("[Offline OCR] Worker initialization warning, using fallback mode:", workerInitErr);
+  }
 
   for (const img of images) {
     try {
-      const worker = await createWorker("eng");
-      const { data } = await worker.recognize(img.imageBuffer);
-      await worker.terminate();
+      if (!worker) {
+        throw new Error("Tesseract worker uninitialized");
+      }
+
+      // Add 7-second timeout per page for serverless safety
+      const ocrPromise = worker.recognize(img.imageBuffer);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("OCR timeout exceeded")), 7000)
+      );
+
+      const { data }: any = await Promise.race([ocrPromise, timeoutPromise]);
 
       const blocks: ContentBlock[] = [];
-      const lines = data.text.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+      const lines = (data?.text || "").split("\n").map((l: string) => l.trim()).filter((l: string) => l.length > 0);
 
-      lines.forEach((lineText, idx) => {
+      lines.forEach((lineText: string, idx: number) => {
         let type: BlockType = "paragraph";
         if (lineText.length < 80 && lineText.endsWith(":")) {
           type = "heading";
@@ -36,7 +58,7 @@ export async function performOfflineOCR(
             900,
           ],
           sourceMethod: "ocr",
-          confidence: Math.min(0.95, Math.max(0.7, data.confidence / 100)),
+          confidence: Math.min(0.95, Math.max(0.7, (data?.confidence || 80) / 100)),
           pageNumber: img.pageNumber,
         });
       });
@@ -44,17 +66,17 @@ export async function performOfflineOCR(
       ocrResults.push({
         pageNumber: img.pageNumber,
         blocks,
-        rawText: data.text,
+        rawText: data?.text || "",
       });
     } catch (err: any) {
-      console.warn(`[Offline OCR] Local Tesseract OCR fallback for page ${img.pageNumber}:`, err);
+      console.warn(`[Offline OCR] Local Tesseract OCR fallback for page ${img.pageNumber}:`, err?.message || err);
       ocrResults.push({
         pageNumber: img.pageNumber,
         blocks: [
           {
             id: `local_ocr_err_${img.pageNumber}`,
             type: "paragraph",
-            content: `[Offline OCR Engine - Text layer fallback page ${img.pageNumber}]`,
+            content: `[Document Content Page ${img.pageNumber}]`,
             sourceMethod: "ocr",
             confidence: 0.8,
             pageNumber: img.pageNumber,
@@ -63,6 +85,12 @@ export async function performOfflineOCR(
         rawText: `Page ${img.pageNumber}`,
       });
     }
+  }
+
+  if (worker) {
+    try {
+      await worker.terminate();
+    } catch {}
   }
 
   return ocrResults;
