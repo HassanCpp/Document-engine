@@ -58,10 +58,19 @@ export function App() {
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        if (response.status === 504) {
+          throw new Error("Serverless Gateway Timeout (HTTP 504). Vercel Hobby accounts limit serverless functions to 10s. Try Option 2 (Full AI Engine) or a smaller document!");
+        }
+        throw new Error(`Server error (HTTP ${response.status}): ${responseText.slice(0, 120)}`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to process document");
+        throw new Error(data.error || `Failed to process document (HTTP ${response.status})`);
       }
 
       setExtractedDoc(data.document);
@@ -110,6 +119,8 @@ export function App() {
               fontWeight: "600",
               zIndex: 100,
               boxShadow: "0 10px 25px rgba(244, 63, 94, 0.4)",
+              maxWidth: "90%",
+              textAlign: "center",
             }}
           >
             {error}

@@ -9,6 +9,7 @@ export async function performOfflineOCR(
 ): Promise<OCRPageResult[]> {
   const ocrResults: OCRPageResult[] = [];
   const tempCacheDir = os.tmpdir();
+  const isVercel = Boolean(process.env.VERCEL);
 
   let worker: any = null;
 
@@ -22,16 +23,21 @@ export async function performOfflineOCR(
     console.warn("[Offline OCR] Worker initialization warning, using fallback mode:", workerInitErr);
   }
 
-  for (const img of images) {
+  // Cap pages processed under local Tesseract on serverless to prevent HTTP 504 timeouts
+  const maxPagesToOcr = isVercel ? Math.min(3, images.length) : images.length;
+  const targetImages = images.slice(0, maxPagesToOcr);
+
+  for (const img of targetImages) {
     try {
       if (!worker) {
         throw new Error("Tesseract worker uninitialized");
       }
 
-      // Add 7-second timeout per page for serverless safety
+      // Add 4-second timeout per page for serverless safety
       const ocrPromise = worker.recognize(img.imageBuffer);
+      const timeoutMs = isVercel ? 4000 : 8000;
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("OCR timeout exceeded")), 7000)
+        setTimeout(() => reject(new Error("OCR timeout exceeded")), timeoutMs)
       );
 
       const { data }: any = await Promise.race([ocrPromise, timeoutPromise]);
