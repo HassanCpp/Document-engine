@@ -1,0 +1,56 @@
+{
+  "name": "doc-intel-engine",
+  "version": "1.0.0",
+  "description": "Standalone Document Intelligence Engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "server": "tsx server.ts",
+    "start": "tsx server.ts",
+    "build": "tsc && vite build client",
+    "build:client": "vite build client",
+    "test": "tsx test/verify-phase1.ts && tsx test/verify-phase2.ts && tsx test/verify-phase3-4.ts"
+  },
+  "keywords": [
+    "document-intelligence",
+    "pdf-parser",
+    "ocr",
+    "structured-data"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.66",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.1.1",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "adm-zip": "^0.5.16",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "lucide-react": "^0.479.0",
+    "mammoth": "^1.9.0",
+    "multer": "^2.2.0",
+    "openai": "^6.49.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^4.10.38",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tesseract.js": "^7.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^7.0.2",
+    "vite": "^6.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+client/dist/
+client/node_modules/
+.env
+.env.local
+.vscode/
+eng.traineddata
+*.log
+.DS_Store
