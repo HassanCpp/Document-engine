@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd document-engine && npm run build && cd ../document-engine-test-app && npm run build:client",
+  "buildCommand": "cd document-engine && npm install && npm run build && cd ../document-engine-test-app && npm install && npm run build:client",
   "outputDirectory": "document-engine-test-app/client/dist",
   "functions": {
     "document-engine-test-app/api/index.ts": {
