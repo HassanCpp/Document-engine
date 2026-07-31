@@ -8,7 +8,7 @@
     "server": "tsx server.ts",
     "start": "tsx server.ts",
     "build:client": "vite build client",
-    "build": "cd ../document-engine && npm run build && cd ../document-engine-test-app && vite build client"
+    "build": "cd ../document-engine && npm install && npm run build && cd ../document-engine-test-app && vite build client"
   },
   "keywords": [
     "document-intelligence",
