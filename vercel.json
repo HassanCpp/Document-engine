@@ -1,0 +1,20 @@
+{
+  "buildCommand": "cd document-engine && npm run build && cd ../document-engine-test-app && npm run build:client",
+  "outputDirectory": "document-engine-test-app/client/dist",
+  "functions": {
+    "document-engine-test-app/api/index.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/document-engine-test-app/api"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
