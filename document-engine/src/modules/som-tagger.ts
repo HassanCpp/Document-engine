@@ -42,8 +42,15 @@ export async function createSetOfMarksTaggedPage(
       const baseImageBuffer = await renderPdfPageToImageBuffer(inputBuffer, pageNumber, dpi);
       baseImage = await loadImage(baseImageBuffer);
     } catch (err) {
-      console.warn(`[SoM Tagger] Falling back to direct image load for page ${pageNumber}:`, err);
-      baseImage = await loadImage(inputBuffer);
+      console.warn(`[SoM Tagger] PDF rasterization failed for page ${pageNumber}, using blank canvas:`, err);
+      // Create a blank white placeholder canvas instead of trying to loadImage a PDF buffer
+      const blankWidth = Math.round((8.5 * dpi) / 72 * 72) || 2480;
+      const blankHeight = Math.round((11 * dpi) / 72 * 72) || 3508;
+      const blankCanvas = createCanvas(blankWidth, blankHeight);
+      const blankCtx = blankCanvas.getContext("2d");
+      blankCtx.fillStyle = "#ffffff";
+      blankCtx.fillRect(0, 0, blankWidth, blankHeight);
+      baseImage = blankCanvas;
     }
 
     try {

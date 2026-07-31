@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { Dropzone } from "./components/Dropzone";
 import { SplitView } from "./components/SplitView";
 import { ApiKeyModal } from "./components/ApiKeyModal";
-import { StructuredDocument, EngineMode } from "../src/types";
+import { StructuredDocument, EngineMode } from "../../../document-engine/src/types";
 
 export function App() {
   const [engineMode, setEngineMode] = useState<EngineMode>("offline");
   const [apiKey, setApiKey] = useState<string>("");
-  const [hasEnvApiKey, setHasEnvApiKey] = useState<boolean>(true);
+  const [hasEnvApiKey, setHasEnvApiKey] = useState<boolean>(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -25,7 +25,7 @@ export function App() {
       .then((res) => res.json())
       .then((data) => {
         if (data.hasEnvApiKey !== undefined) {
-          setHasEnvApiKey(data.hasEnvApiKey);
+          setHasEnvApiKey(Boolean(data.hasEnvApiKey));
         }
       })
       .catch(() => {});
@@ -33,12 +33,14 @@ export function App() {
 
   const handleSelectEngineMode = (mode: EngineMode) => {
     setEngineMode(mode);
+    // ONLY prompt for API key if NO env key exists AND user hasn't entered a manual key
     if (mode === "ai" && !hasEnvApiKey && !apiKey) {
       setIsApiKeyModalOpen(true);
     }
   };
 
   const handleFileSelected = async (file: File) => {
+    // ONLY prompt for API key if NO env key exists AND user hasn't entered a manual key
     if (engineMode === "ai" && !hasEnvApiKey && !apiKey) {
       setIsApiKeyModalOpen(true);
       return;
@@ -64,7 +66,7 @@ export function App() {
         data = JSON.parse(responseText);
       } catch {
         if (response.status === 504) {
-          throw new Error("Serverless Gateway Timeout (HTTP 504). Vercel Hobby accounts limit serverless functions to 10s. Try Option 2 (Full AI Engine) or a smaller document!");
+          throw new Error("Serverless Gateway Timeout (HTTP 504). Try Option 2 (Full AI Engine) or a smaller document!");
         }
         throw new Error(`Server error (HTTP ${response.status}): ${responseText.slice(0, 120)}`);
       }

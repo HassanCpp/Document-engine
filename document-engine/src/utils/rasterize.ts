@@ -1,10 +1,12 @@
 import { createCanvas } from "@napi-rs/canvas";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createRequire } from "module";
+import { pathToFileURL } from "url";
 
 try {
-  pdfjs.GlobalWorkerOptions.workerSrc = import.meta.resolve(
-    "pdfjs-dist/legacy/build/pdf.worker.mjs"
-  );
+  const localRequire = createRequire(import.meta.url);
+  const workerPath = localRequire.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
 } catch {}
 
 export async function renderPdfPageToImageBuffer(
@@ -14,8 +16,6 @@ export async function renderPdfPageToImageBuffer(
 ): Promise<Buffer> {
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    useSystemFonts: true,
-    disableFontFace: true,
     verbosity: 0,
   });
 
@@ -40,8 +40,6 @@ export async function renderPdfPageToImageBuffer(
 export async function getPdfPageCount(pdfBuffer: Buffer): Promise<number> {
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    useSystemFonts: true,
-    disableFontFace: true,
     verbosity: 0,
   });
   const pdfDocument = await loadingTask.promise;

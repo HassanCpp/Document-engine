@@ -1,10 +1,12 @@
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createRequire } from "module";
+import { pathToFileURL } from "url";
 import { PageTriageResult, PageTriageCategory } from "../types.js";
 
 try {
-  pdfjs.GlobalWorkerOptions.workerSrc = import.meta.resolve(
-    "pdfjs-dist/legacy/build/pdf.worker.mjs"
-  );
+  const localRequire = createRequire(import.meta.url);
+  const workerPath = localRequire.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
 } catch {}
 
 export async function triagePdfPage(
@@ -13,8 +15,6 @@ export async function triagePdfPage(
 ): Promise<PageTriageResult> {
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    useSystemFonts: true,
-    disableFontFace: true,
     verbosity: 0,
   });
 

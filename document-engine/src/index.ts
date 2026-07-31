@@ -85,11 +85,13 @@ export async function processDocument(
   let ocrStartTimeMs: number | undefined;
   let ocrEndTimeMs: number | undefined;
 
-  if (engineMode === "offline") {
+  const isVisualFormat = fileVal.documentType === "pdf" || fileVal.documentType === "image";
+
+  if (engineMode === "offline" || !isVisualFormat) {
     // =========================================================================
-    // OPTION 1: PURE OFFLINE ENGINE (Zero LLM Calls)
+    // OPTION 1: PURE OFFLINE ENGINE / NATIVE OFFICE EXTRACTION
     // =========================================================================
-    logStep("ENGINE DISPATCH", "Executing Option 1: Pure Offline Pipeline (Zero LLM Calls)");
+    logStep("ENGINE DISPATCH", `Executing Native Structural Extraction for ${fileVal.documentType.toUpperCase()}`);
 
     if (doclingResult.missingVisualPageNumbers.length > 0 || fileVal.documentType === "image") {
       const targetPages = fileVal.documentType === "image" ? [1] : doclingResult.missingVisualPageNumbers;

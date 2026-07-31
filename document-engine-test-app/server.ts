@@ -4,14 +4,23 @@ import multer from "multer";
 import dotenv from "dotenv";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { processDocument, exportToMarkdown, exportToValidationReport } from "./src/index.js";
-import { renderPdfPageToImageBuffer, getPdfPageCount } from "./src/utils/rasterize.js";
-import { ProcessOptions, StructuredDocument, EngineMode } from "./src/types.js";
-
-dotenv.config();
+import {
+  processDocument,
+  exportToMarkdown,
+  exportToValidationReport,
+  StructuredDocument,
+  EngineMode,
+  ProcessOptions,
+} from "../document-engine/src/index.js";
+import { renderPdfPageToImageBuffer, getPdfPageCount } from "../document-engine/src/utils/rasterize.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load .env from current folder, root folder, or library folder
+dotenv.config();
+dotenv.config({ path: path.join(__dirname, "../.env") });
+dotenv.config({ path: path.join(__dirname, "../document-engine/.env") });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,7 +35,8 @@ const upload = multer({
 });
 
 app.get("/api/config", (req, res) => {
-  const hasEnvApiKey = Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim().length > 0);
+  const envKey = process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.trim() : "";
+  const hasEnvApiKey = Boolean(envKey.length > 0);
   return res.json({
     hasEnvApiKey,
     model: process.env.OPENAI_MODEL || "gpt-4o",
@@ -36,7 +46,6 @@ app.get("/api/config", (req, res) => {
 app.post("/api/process", upload.single("file"), async (req, res) => {
   const capturedLogs: string[] = [];
 
-  // Capture console logs during processing for frontend live console
   const origLog = console.log;
   const origWarn = console.warn;
   const origError = console.error;
@@ -101,7 +110,6 @@ app.post("/api/process", upload.single("file"), async (req, res) => {
     const markdownOutput = exportToMarkdown(doc);
     const validationReportOutput = exportToValidationReport(doc);
 
-    // Restore original console loggers
     console.log = origLog;
     console.warn = origWarn;
     console.error = origError;
@@ -158,7 +166,7 @@ export default app;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`\n==================================================`);
-    console.log(` DOCLING DOCUMENT INTELLIGENCE SERVER READY`);
+    console.log(` DOCUMENT INTELLIGENCE TEST APP READY`);
     console.log(` URL: http://localhost:3001`);
     console.log(`==================================================\n`);
   });

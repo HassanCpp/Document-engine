@@ -1,9 +1,11 @@
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createRequire } from "module";
 import { pathToFileURL } from "url";
 import { ContentBlock, BlockType } from "../../types.js";
 
 try {
-  const workerPath = require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  const localRequire = createRequire(import.meta.url);
+  const workerPath = localRequire.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
   pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
 } catch {}
 
@@ -22,8 +24,6 @@ export async function extractNativePdfPage(
 ): Promise<ContentBlock[]> {
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    useSystemFonts: true,
-    disableFontFace: true,
     verbosity: 0,
   });
 

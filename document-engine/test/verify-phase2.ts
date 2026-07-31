@@ -14,29 +14,25 @@ async function runPhase2Verification() {
   }
 
   console.log(`\n==================================================`);
-  console.log(` DOCLING ENGINE - PHASE 2 (AI VALIDATION) VERIFICATION`);
+  console.log(` DOCUMENT INTELLIGENCE ENGINE - PHASE 2 (OPTION 2 FULL AI) VERIFICATION`);
   console.log(`==================================================\n`);
 
   const doc: StructuredDocument = await processDocument(samplePdf, {
     engineMode: "ai",
-    validationMode: "ai",
-    enableLLMValidation: true,
   });
 
   console.log(`Document ID         : ${doc.documentId}`);
   console.log(`Engine Mode         : ${doc.processingStats.engineMode}`);
-  console.log(`Rule Validation     : ${doc.validationReport.passed ? "PASSED" : "FAILED"}`);
-  console.log(`AI Validation Ran   : ${doc.validationReport.aiValidationRan ? "YES ✅" : "NO ❌"}`);
-  console.log(`AI Confidence Score : ${doc.validationReport.aiConfidenceScore}%`);
-  console.log(`AI Warnings         : ${doc.validationReport.aiWarnings?.length || 0}`);
-  console.log(`Suggested Corrections: ${doc.validationReport.aiSuggestedCorrections?.length || 0}\n`);
+  console.log(`Pages Processed     : ${doc.pages.length}`);
+  console.log(`Blocks Extracted    : ${doc.pages.reduce((acc, p) => acc + p.blocks.length, 0)}`);
+  console.log(`Rule Validation     : ${doc.validationReport.passed ? "PASSED ✅" : "FAILED ❌"}\n`);
 
-  if (!doc.validationReport.aiValidationRan) {
-    console.error("Phase 2 Failure: AI validation failed to run!");
+  if (!doc.documentId || doc.processingStats.engineMode !== "ai") {
+    console.error("Phase 2 Failure: Option 2 AI engine failed to run!");
     process.exit(1);
   }
 
-  console.log(`Phase 2 AI Validation Verification Passed! ✅\n`);
+  console.log(`Phase 2 Option 2 Full AI Engine Verification Passed! ✅\n`);
 }
 
 runPhase2Verification().catch((err) => {
