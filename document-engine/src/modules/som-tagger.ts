@@ -75,7 +75,7 @@ export async function createSetOfMarksTaggedPage(
       {
         id: `som_grid_1`,
         type: "paragraph",
-        content: `Document Page ${pageNumber} Visual Content`,
+        content: `Visual region for Page ${pageNumber}`,
         boundingBox: [50, 50, 950, 950],
         sourceMethod: "native",
         confidence: 0.9,
